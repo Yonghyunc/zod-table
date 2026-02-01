@@ -119,6 +119,7 @@ body {
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -126,4 +127,17 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+@layer base {
+  body {
+    font-size: 14px;
+    color: #1B1B1B;
+  }
+}
+
+@theme {
+  --color-verde: #2F7900;
+  --color-border-gray: #CECECE;
+  --font-size-base: 14px;
 }
