@@ -1,7 +1,7 @@
 'use client';
 
 import WeeklyScheduler from './components/WeeklyScheduler';
-import {ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { getCurrentWeekStatus } from './utils/getCurrentWeekStatus';
 import { useEffect, useState } from 'react';
 import WeekSelector from './components/WeekSelector';
