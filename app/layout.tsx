@@ -1,21 +1,30 @@
 import type { Metadata } from "next";
-import { Noto_Sans, Noto_Sans_KR } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import BottomNavigation from "./components/BottomNavigation";
 
-
-const notoSans = Noto_Sans({
+const notoSans = localFont({
+  src: [
+    {
+      path: "./_fonts/NotoSans-VariableFont_wdth,wght.ttf",
+      style: "normal",
+    },
+    {
+      path: "./_fonts/NotoSans-Italic-VariableFont_wdth,wght.ttf",
+      style: "italic",
+    },
+  ],
   variable: "--font-noto-sans",
-  subsets: ["latin"],
+  weight: "100 900", // 가변 폰트의 두께 범위를 지정
+  display: "swap",
 });
 
-const notoSansKr = Noto_Sans_KR({
+const notoSansKr = localFont({
+  src: "./_fonts/NotoSansKR-VariableFont_wght.ttf",
   variable: "--font-noto-sans-kr",
-  subsets: ["latin"],
-  weight: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
+  weight: "100 900", // 가변 폰트의 두께 범위를 지정
+  display: "swap",
 });
-
-
 
 export const metadata: Metadata = {
   title: "ZoD-Table",
@@ -28,9 +37,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko" className={notoSansKr.variable}>
+    <html lang="ko" className={`${notoSans.variable} ${notoSansKr.variable}`}>
       <body
-        className={`${notoSans.variable} ${notoSansKr.variable}  antialiased bg-white h-screen overflow-hidden max-w-md mx-auto`}
+        className={`${notoSans.variable} ${notoSansKr.variable} mx-auto h-screen max-w-md overflow-hidden bg-white antialiased`}
       >
         {children}
         <BottomNavigation />

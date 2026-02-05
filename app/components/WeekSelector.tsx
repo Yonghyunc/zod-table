@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from 'react';
-import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
+import { useState } from "react";
+import { ChevronLeft, ChevronRight, Calendar } from "lucide-react";
 
 interface Props {
   currentDate: Date;
@@ -9,7 +9,6 @@ interface Props {
 }
 
 export default function WeekSelector({ currentDate, onDateChange }: Props) {
-
   // 주차 계산 로직 (내부 함수)
   const getWeekInfo = (date: Date) => {
     const d = new Date(date);
@@ -25,7 +24,7 @@ export default function WeekSelector({ currentDate, onDateChange }: Props) {
   const getWeekDisplay = (baseDate: Date) => {
     const today = new Date(baseDate);
     const currentDay = today.getDay(); // 0(일)~6(토)
-    
+
     // 이번 주의 월요일과 일요일 구하기
     const diffToMon = currentDay === 0 ? -6 : 1 - currentDay;
     const monday = new Date(today);
@@ -64,27 +63,26 @@ export default function WeekSelector({ currentDate, onDateChange }: Props) {
   // };
 
   return (
-    
-    <div className="flex items-center justify-between h-12 w-full max-w-md p-4 bg-white border rounded shadow-sm">
+    <div className="shadow-box flex h-12 w-full max-w-md items-center justify-between rounded border bg-white p-4">
       {/* 왼쪽 버튼 */}
-      <button 
+      <button
         onClick={() => moveWeek(-7)}
-        className="p-2 transition-colors rounded-full hover:bg-gray-100 active:scale-95 cursor-pointer"
+        className="cursor-pointer rounded-full p-2 transition-colors hover:bg-gray-100 active:scale-95"
       >
         <ChevronLeft className="#3B3B3B" size={20} />
       </button>
 
       {/* 중앙 주차 표시 */}
-      <div className="flex items-center gap-2 px-4 py-1 rounded-lg bg-gray-50">
+      <div className="flex items-center gap-2 rounded-lg bg-gray-50 px-4 py-1">
         <span className="font-medium tracking-tight">
           {getWeekDisplay(currentDate)}
         </span>
       </div>
 
       {/* 오른쪽 버튼 */}
-      <button 
+      <button
         onClick={() => moveWeek(7)}
-        className="p-2 transition-colors rounded-full hover:bg-gray-100 active:scale-95 cursor-pointer"
+        className="cursor-pointer rounded-full p-2 transition-colors hover:bg-gray-100 active:scale-95"
       >
         <ChevronRight className="#3B3B3B" size={20} />
       </button>

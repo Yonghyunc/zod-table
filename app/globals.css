@@ -1,6 +1,5 @@
 @import "tailwindcss";
 
-
 @custom-variant dark (&:is(.dark *));
 
 :root {
@@ -81,10 +80,6 @@
   --radius-4xl: calc(var(--radius) + 16px);
 }
 
-body {
-  font-family: var(--font-noto-sans), var(--font-noto-sans-kr), Arial, Helvetica, sans-serif;
-}
-
 .dark {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
@@ -119,25 +114,23 @@ body {
   --sidebar-ring: oklch(0.556 0 0);
 }
 
-
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
   body {
     @apply bg-background text-foreground;
-  }
-}
-
-@layer base {
-  body {
     font-size: 14px;
-    color: #1B1B1B;
+    color: #1b1b1b;
+    font-family: var(--font-sans);
   }
 }
 
 @theme {
-  --color-verde: #2F7900;
-  --color-border-gray: #CECECE;
+  --color-verde: #2f7900;
+  --color-border-gray: #cecece;
   --font-size-base: 14px;
+  --shadow-box: 0 2px 2px 0 rgb(0, 0, 0, 0.1);
+  --font-sans:
+    var(--font-noto-sans), var(--font-noto-sans-kr), ui-sans-serif, system-ui;
 }
