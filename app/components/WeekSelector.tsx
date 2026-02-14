@@ -63,7 +63,7 @@ export default function WeekSelector({ currentDate, onDateChange }: Props) {
   // };
 
   return (
-    <div className="shadow-box flex h-12 w-full max-w-md items-center justify-between rounded border bg-white p-4">
+    <div className="shadow-box flex h-12 w-full max-w-md items-center justify-between rounded bg-white p-4">
       {/* 왼쪽 버튼 */}
       <button
         onClick={() => moveWeek(-7)}
