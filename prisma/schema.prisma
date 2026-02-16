@@ -1,125 +1,98 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client"
-  output   = "../lib/generated/prisma"
-  engineType      = "client"
+  provider   = "prisma-client"
+  output     = "../lib/generated/prisma"
+  engineType = "client"
 }
 
 datasource db {
   provider = "postgresql"
 }
 
+enum MealTime {
+  breakfast
+  lunch
+  dinner
+}
 
-// 1. 유저 정보
 model User {
   userId    String         @id @db.VarChar(15)
   name      String         @db.VarChar(10)
   password  String         @db.VarChar(100)
-
-  // 관계 설정
   schedules MealSchedule[]
   expenses  MealExpense[]
   recipes   Recipe[]
 
-  @@map("users") // 실제 DB 테이블 이름을 소문자로 매핑
+  @@map("users")
 }
 
-// 2. 카테고리 (야채, 과일, 고기 ...)
 model ItemCategory {
-  categoryId   String        @id @db.Char(2) 
+  categoryId   String        @id @db.Char(2)
   categoryName String        @db.VarChar(20)
-  
-  // 관계 설정
   expenses     MealExpense[]
 
   @@map("item_categories")
 }
 
-// 3. 식단 일정
 model MealSchedule {
-  scheduleId String    @id @default(uuid()) @db.Uuid
-  mealDate   DateTime  @db.Date
-  mealTime   String    @db.Char(2) // 아침, 점심, 저녁
-  mealType   String?   @db.VarChar(5) @default("0") // 집밥, 도시락, 배달, 외식
-  mealMemo   String?   @db.VarChar(255)
-  
-  // FK 연관 관계
-  userId     String    @db.VarChar(15)
-  user       User      @relation(fields: [userId], references: [userId])
-  
+  scheduleId String     @id @default(uuid()) @db.Uuid
+  mealDate   DateTime   @db.Date
+  mealTime   MealTime 
+  mealType   String?    @default("0") @db.VarChar(5)
+  mealMemo   String?    @db.VarChar(255)
+  userId     String     @db.VarChar(15)
+  user       User       @relation(fields: [userId], references: [userId])
   logs       MealLog[]
 
   @@map("meal_schedules")
 }
 
-// 4. 식재료 마스터
 model Ingredient {
-  ingredientId   String             @id @default(uuid()) @db.Uuid
-  ingredientName String             @db.VarChar(20)
-  
-  // 관계 설정
-  recipeIngredients RecipeIngredient[]
+  ingredientId       String             @id @default(uuid()) @db.Uuid
+  ingredientName     String             @db.VarChar(20)
+  recipeIngredients  RecipeIngredient[]
 
   @@map("ingredients")
 }
 
-// 5. 식비 지출 내역
 model MealExpense {
   expenseId     String       @id @default(cuid())
   expenseDate   DateTime     @db.Date
   expenseItem   String       @db.VarChar(20)
   expenseAmount Int?         @default(0)
-  
-  // FK 연관 관계
   categoryId    String       @db.Char(2)
   category      ItemCategory @relation(fields: [categoryId], references: [categoryId])
-  
   userId        String       @db.VarChar(15)
   user          User         @relation(fields: [userId], references: [userId])
 
   @@map("meal_expenses")
 }
 
-// 6. 레시피
 model Recipe {
-  recipeId   String             @id @default(uuid()) @db.Uuid
-  recipeName String             @db.VarChar(50)
-  recipeMemo String?            @db.Text
-  recipeUrl  String?            @db.Text
-  
-  // FK 연관 관계
-  userId     String             @db.VarChar(15)
-  user       User               @relation(fields: [userId], references: [userId])
-  
-  ingredients RecipeIngredient[]
+  recipeId     String             @id @default(uuid()) @db.Uuid
+  recipeName   String             @db.VarChar(50)
+  recipeMemo   String?            @db.Text
+  recipeUrl    String?            @db.Text
+  userId       String             @db.VarChar(15)
+  user         User               @relation(fields: [userId], references: [userId])
+  ingredients  RecipeIngredient[]
 
   @@map("recipes")
 }
 
-// 7. 레시피-식재료 매핑 (다대다 관계를 위한 중간 테이블)
 model RecipeIngredient {
   id           String     @id @default(uuid()) @db.Uuid
-  
   recipeId     String     @db.Uuid
   recipe       Recipe     @relation(fields: [recipeId], references: [recipeId])
-  
   ingredientId String     @db.Uuid
   ingredient   Ingredient @relation(fields: [ingredientId], references: [ingredientId])
 
   @@map("recipe_ingredients")
 }
 
-// 8. 식사 로그 (구체적인 메뉴명)
 model MealLog {
   logId      String       @id @default(uuid()) @db.Uuid
   menuName   String       @db.VarChar(20)
-  
-  scheduleId String       @db.Uuid 
+  scheduleId String       @db.Uuid
   schedule   MealSchedule @relation(fields: [scheduleId], references: [scheduleId])
 
   @@map("meal_logs")

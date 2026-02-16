@@ -41,7 +41,7 @@ export default function RootLayout({
       <body
         className={`${notoSans.variable} ${notoSansKr.variable} mx-auto h-screen max-w-md overflow-hidden bg-white antialiased`}
       >
-        <div className="h-[calc(100dvh-64px)] overflow-y-auto">
+        <div className="scrollbar-hide h-[calc(100dvh-64px)] overflow-y-auto">
           {children}
         </div>
         <BottomNavigation />
