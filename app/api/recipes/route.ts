@@ -3,10 +3,10 @@ import { prisma } from "@/lib/prisma";
 import { requireAuth, unauthorizedResponse } from "@/lib/auth";
 
 interface CreateRecipeBody {
-  recipeName?: string;
+  recipeName: string;
   recipeMemo?: string;
   recipeUrl?: string;
-  ingredients?: string[];
+  ingredients: string[];
 }
 
 interface UpdateRecipeBody extends CreateRecipeBody {
@@ -21,10 +21,12 @@ function normalizeRecipeInput(body: CreateRecipeBody) {
   const recipeName = body.recipeName?.trim();
   const recipeMemo = body.recipeMemo?.trim() || null;
   const recipeUrl = body.recipeUrl?.trim() || null;
-  const rawIngredients = Array.isArray(body.ingredients) ? body.ingredients : [];
-  const ingredients = [...new Set(rawIngredients.map((item) => item.trim()))].filter(
-    (item) => item.length > 0,
-  );
+  const rawIngredients = Array.isArray(body.ingredients)
+    ? body.ingredients
+    : [];
+  const ingredients = [
+    ...new Set(rawIngredients.map((item) => item.trim())),
+  ].filter((item) => item.length > 0);
 
   return { recipeName, recipeMemo, recipeUrl, ingredients };
 }
@@ -138,6 +140,7 @@ export async function POST(request: NextRequest) {
   if (!auth.payload?.userId) {
     return unauthorizedResponse(auth.reason ?? undefined);
   }
+  const userId = auth.payload.userId;
 
   let body: CreateRecipeBody;
   try {
@@ -159,7 +162,7 @@ export async function POST(request: NextRequest) {
         recipeName,
         recipeMemo,
         recipeUrl,
-        userId: auth.payload.userId,
+        userId,
       },
       select: {
         recipeId: true,
