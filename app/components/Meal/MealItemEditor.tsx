@@ -138,13 +138,6 @@ export default function MealItemEditor({
           );
         })}
       </div>
-      {menuList.length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          {menuList.map((menuItem, idx) => (
-            <Chip key={idx} text={menuItem} onDelete={deleteMenu} />
-          ))}
-        </div>
-      )}
       <div className="relative w-60">
         <Input
           value={menu}
@@ -163,6 +156,13 @@ export default function MealItemEditor({
           onClick={addMenu}
         />
       </div>
+      {menuList.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {menuList.map((menuItem, idx) => (
+            <Chip key={idx} text={menuItem} onDelete={deleteMenu} />
+          ))}
+        </div>
+      )}
       <Textarea
         placeholder="Memo"
         value={memo}

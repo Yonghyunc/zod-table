@@ -93,9 +93,10 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const auth = await requireAuth(request);
-  if (!auth.payload?.userId) {
+  if (!auth.payload || !auth.payload.userId) {
     return unauthorizedResponse(auth.reason ?? undefined);
   }
+  const userId = auth.payload.userId;
 
   let body: CreateMealScheduleBody;
   try {
@@ -126,7 +127,7 @@ export async function POST(request: NextRequest) {
   const schedule = await prisma.$transaction(async (tx) => {
     const createdSchedule = await tx.mealSchedule.create({
       data: {
-        userId: auth.payload.userId,
+        userId,
         mealDate: new Date(Date.UTC(year, month - 1, day)),
         mealTime,
         mealType,

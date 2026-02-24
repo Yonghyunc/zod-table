@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import WeekSelector from "./components/WeekSelector";
+import WeekSelector from "./components/Meal/WeekSelector";
 import { getDaysInWeek } from "./_utils/getDaysInWeek";
 import DailyMealBox from "./components/Meal/DailyMealBox";
 import { formatDate } from "./_utils/formatDateToString";
@@ -51,7 +51,6 @@ export default function MealPlanPage() {
   return (
     <div className="h-full">
       <HeaderBar title="식단" />
-      {/* bg-[#F8F9F9] */}
       <div className="scrollbar-hide w-full overflow-y-auto scroll-smooth bg-[#F8F9F9] p-4">
         <WeekSelector currentDate={currentDate} onDateChange={setCurrentDate} />
         <div className="mt-10 flex flex-col gap-4">

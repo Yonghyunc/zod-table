@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import BottomNavigation from "./components/BottomNavigation";
+import { CategoryProvider } from "@/context/CategoryContext";
 
 const notoSans = localFont({
   src: [
@@ -38,13 +39,18 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" className={`${notoSans.variable} ${notoSansKr.variable}`}>
-      <body
-        className={`${notoSans.variable} ${notoSansKr.variable} mx-auto h-screen max-w-md overflow-hidden bg-white antialiased`}
-      >
-        <div className="scrollbar-hide h-[calc(100dvh-64px)] overflow-y-auto">
-          {children}
-        </div>
-        <BottomNavigation />
+      {/* body에서는 max-w-md와 mx-auto를 제거합니다 */}
+      <body className="h-screen bg-gray-100 antialiased">
+        <CategoryProvider>
+          {/* 실제 콘텐츠 영역을 담당하는 Wrapper 생성 */}
+          <div className="relative mx-auto flex h-full max-w-md flex-col bg-white shadow-lg">
+            <main className="scrollbar-hide h-[calc(100dvh-64px)] overflow-x-hidden overflow-y-auto">
+              {children}
+            </main>
+
+            <BottomNavigation />
+          </div>
+        </CategoryProvider>
       </body>
     </html>
   );

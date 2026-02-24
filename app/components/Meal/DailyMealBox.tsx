@@ -99,7 +99,7 @@ export default function DailyMealBox({
                   <div className="flex items-center justify-between">
                     <div>
                       {schedule && schedule.logs.length > 0 && (
-                        <p className="text-xs text-gray-800">
+                        <p className="text-[13px] text-gray-800">
                           {schedule.logs.map((log) => log.menuName).join(", ")}
                         </p>
                       )}

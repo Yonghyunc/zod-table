@@ -9,17 +9,17 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import {LogOutIcon} from "lucide-react"
+import { LogOutIcon } from "lucide-react";
 
 interface Props {
   title: string;
 }
 
-export default function HeaderBar({title}: Props) {
+export default function HeaderBar({ title }: Props) {
   const router = useRouter();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
@@ -41,10 +41,13 @@ export default function HeaderBar({title}: Props) {
   };
 
   return (
-      <div className="p-4 relative w-full">
-        <DropdownMenu modal={false}>
+    <div className="relative w-full border-b p-4">
+      <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
-            <Menu className="absolute cursor-pointer left-4 top-5" size={18}></Menu>
+          <Menu
+            className="absolute top-5 left-4 cursor-pointer"
+            size={18}
+          ></Menu>
         </DropdownMenuTrigger>
         <DropdownMenuContent portalled={false} align="start" sideOffset={10}>
           <DropdownMenuGroup>
@@ -67,7 +70,7 @@ export default function HeaderBar({title}: Props) {
           </DropdownMenuGroup>
         </DropdownMenuContent>
       </DropdownMenu>
-        <h1 className="text-center font-bold text-gray-800">{title}</h1>
-      </div>
-  )
+      <h1 className="text-center font-bold text-gray-800">{title}</h1>
+    </div>
+  );
 }
