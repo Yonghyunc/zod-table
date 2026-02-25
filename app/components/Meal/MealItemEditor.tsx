@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { FormEvent, useState } from "react";
 import { MEAL_TIME, MealTime } from "@/constants/meal";
 import { MealSchedule } from "@/types/meal";
 import { Button } from "@/components/ui/button";
@@ -56,10 +56,45 @@ export default function MealItemEditor({
     }
   };
 
+  const appendUniqueMenus = (current: string[], incoming: string[]) => {
+    const existing = new Set(current);
+    const uniqueIncoming = incoming.filter((item) => {
+      if (existing.has(item)) return false;
+      existing.add(item);
+      return true;
+    });
+
+    return uniqueIncoming.length > 0
+      ? [...current, ...uniqueIncoming]
+      : current;
+  };
+
   const addMenu = () => {
-    if (menu.trim() === "") return;
-    setMenuList((prev) => [...prev, menu.trim()]);
+    const nextMenu = menu.trim();
+    if (nextMenu === "") return;
+    setMenuList((prev) => appendUniqueMenus(prev, [nextMenu]));
     setMenu("");
+  };
+
+  const handleMenuInputChange = (value: string) => {
+    const normalized = value.replace(/\r\n/g, "\n");
+    if (!/[,\n]/.test(normalized)) {
+      setMenu(normalized);
+      return;
+    }
+
+    const parts = normalized.split(/[,\n]/);
+    const nextMenu = parts.pop() ?? "";
+    const parsedMenus = parts.map((item) => item.trim()).filter(Boolean);
+    if (parsedMenus.length > 0) {
+      setMenuList((prev) => appendUniqueMenus(prev, parsedMenus));
+    }
+    setMenu(nextMenu);
+  };
+
+  const onMenuSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    addMenu();
   };
 
   const deleteMenu = (target: string) => {
@@ -72,6 +107,12 @@ export default function MealItemEditor({
     try {
       setIsSaving(true);
       setSaveError(null);
+      const normalizedMemo = memo.replace(/\r\n/g, "\n");
+      const pendingMenu = menu.trim();
+      const menuNames =
+        pendingMenu !== "" && !menuList.includes(pendingMenu)
+          ? [...menuList, pendingMenu]
+          : menuList;
 
       const response = schedule?.scheduleId
         ? await fetch("/api/meal-schedules", {
@@ -80,8 +121,8 @@ export default function MealItemEditor({
             body: JSON.stringify({
               scheduleId: schedule.scheduleId,
               mealType: selected ?? null,
-              mealMemo: memo,
-              menuNames: menuList,
+              mealMemo: normalizedMemo,
+              menuNames,
             }),
           })
         : await fetch("/api/meal-schedules", {
@@ -91,8 +132,8 @@ export default function MealItemEditor({
               mealDate,
               mealTime,
               mealType: selected ?? null,
-              mealMemo: memo,
-              menuNames: menuList,
+              mealMemo: normalizedMemo,
+              menuNames,
             }),
           });
 
@@ -138,24 +179,19 @@ export default function MealItemEditor({
           );
         })}
       </div>
-      <div className="relative w-60">
+      <form className="relative w-60" onSubmit={onMenuSubmit}>
         <Input
           value={menu}
-          onChange={(e) => setMenu(e.target.value)}
+          onChange={(e) => handleMenuInputChange(e.target.value)}
+          enterKeyHint="done"
           className="h-7 text-xs"
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              addMenu();
-            }
-          }}
         />
         <Check
           size={18}
           className="text-verde absolute top-1/2 right-2 -translate-y-1/2 cursor-pointer"
           onClick={addMenu}
         />
-      </div>
+      </form>
       {menuList.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {menuList.map((menuItem, idx) => (

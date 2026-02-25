@@ -135,72 +135,74 @@ export default function ExpenseDetail({
   };
 
   return (
-    <div className="min-h-75 bg-white p-4">
+    <div className="h-auto min-h-60 shrink-0 bg-white p-4">
       <div className="mb-2 flex items-center justify-between">
         <h1 className="font-semibold">상세 지출</h1>
         <Plus size={20} className="cursor-pointer" onClick={openEditor} />
       </div>
 
-      {isLoading && (
+      {isLoading ? (
         <p className="text-center text-sm text-gray-500">Loading...</p>
-      )}
+      ) : (
+        <>
+          {weekDates.map((date) => {
+            const dayKey = format(date, "yyyy-MM-dd");
+            const dayExpenses = expenses.filter(
+              (expense) =>
+                format(new Date(expense.expenseDate), "yyyy-MM-dd") === dayKey,
+            );
+            const totalAmount = dayExpenses.reduce(
+              (sum, expense) => sum + (expense.expenseAmount ?? 0),
+              0,
+            );
 
-      {weekDates.map((date) => {
-        const dayKey = format(date, "yyyy-MM-dd");
-        const dayExpenses = expenses.filter(
-          (expense) =>
-            format(new Date(expense.expenseDate), "yyyy-MM-dd") === dayKey,
-        );
-        const totalAmount = dayExpenses.reduce(
-          (sum, expense) => sum + (expense.expenseAmount ?? 0),
-          0,
-        );
-
-        return (
-          <div
-            hidden={dayExpenses.length === 0}
-            key={dayKey}
-            className="px-2 py-2 text-xs"
-          >
-            <div className="flex items-center justify-between">
-              <h2 className="font-semibold">
-                {format(date, "d일(EEE)", { locale: ko })}
-              </h2>
-              <span className="mr-[22px] font-semibold">
-                {totalAmount.toLocaleString()}원
-              </span>
-            </div>
-            <div className="my-2 space-y-1">
-              {dayExpenses.map((expense) => (
-                <div
-                  key={expense.expenseId}
-                  className="flex items-center justify-between text-xs"
-                >
-                  <div className="flex items-center">
-                    <div className="w-16">
-                      <CategoryBadge id={expense.categoryId} />
-                    </div>
-                    <span>{expense.expenseItem}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span>
-                      {expense.expenseAmount?.toLocaleString() ?? 0}원
-                    </span>
-                    <CircleX
-                      size={13}
-                      color="#808080"
-                      className="cursor-pointer"
-                      onClick={() =>
-                        void handleDeleteExpense(expense.expenseId)
-                      }
-                    />
-                  </div>
+            return (
+              <div
+                hidden={dayExpenses.length === 0}
+                key={dayKey}
+                className="px-2 py-2 text-xs"
+              >
+                <div className="flex items-center justify-between">
+                  <h2 className="font-semibold">
+                    {format(date, "d일(EEE)", { locale: ko })}
+                  </h2>
+                  <span className="mr-[22px] font-semibold">
+                    {totalAmount.toLocaleString()}원
+                  </span>
                 </div>
-              ))}
-            </div>
-          </div>
-        );
-      })}
+                <div className="my-2 space-y-1">
+                  {dayExpenses.map((expense) => (
+                    <div
+                      key={expense.expenseId}
+                      className="flex items-center justify-between text-xs"
+                    >
+                      <div className="flex items-center">
+                        <div className="w-16">
+                          <CategoryBadge id={expense.categoryId} />
+                        </div>
+                        <span>{expense.expenseItem}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span>
+                          {expense.expenseAmount?.toLocaleString() ?? 0}원
+                        </span>
+                        <CircleX
+                          size={13}
+                          color="#808080"
+                          className="cursor-pointer"
+                          onClick={() =>
+                            void handleDeleteExpense(expense.expenseId)
+                          }
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </>
+      )}
     </div>
   );
 }

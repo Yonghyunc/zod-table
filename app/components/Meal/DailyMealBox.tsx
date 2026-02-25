@@ -104,7 +104,7 @@ export default function DailyMealBox({
                         </p>
                       )}
                       {schedule && schedule.mealMemo && (
-                        <p className="text-[11px] text-gray-500">
+                        <p className="text-[11px] whitespace-pre-line text-gray-500">
                           {schedule.mealMemo}
                         </p>
                       )}

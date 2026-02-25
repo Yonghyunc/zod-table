@@ -45,7 +45,9 @@ export default function RecipeBox({ recipe, onEdit }: Props) {
       <div className="mx-1 flex justify-start">
         <p className="w-10 text-xs font-medium">메모</p>
         {recipe.recipeMemo && (
-          <p className="text-xs text-gray-700">{recipe.recipeMemo}</p>
+          <p className="text-xs whitespace-pre-line text-gray-700">
+            {recipe.recipeMemo}
+          </p>
         )}
       </div>
     </div>

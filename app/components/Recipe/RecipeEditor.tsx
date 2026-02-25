@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Check } from "lucide-react";
-import { useState } from "react";
+import { FormEvent, useState } from "react";
 import { Chip } from "../common/Chip";
 import { Textarea } from "@/components/ui/textarea";
 import { RecipeItem } from "@/types/recipe";
@@ -38,14 +38,61 @@ export default function RecipeEditor({
   const [ingredient, setIngredient] = useState("");
   const [memo, setMemo] = useState(initialValues?.recipeMemo ?? "");
   const [url, setUrl] = useState(initialValues?.recipeUrl ?? "");
+  const normalizedMemo = memo.replace(/\r\n/g, "\n");
+  const pendingIngredient = ingredient.trim();
+  const ingredientsToSave =
+    pendingIngredient !== "" && !ingredientList.includes(pendingIngredient)
+      ? [...ingredientList, pendingIngredient]
+      : ingredientList;
 
   const canSave =
-    !isSaving && name.trim().length > 0 && ingredientList.length > 0;
+    !isSaving && name.trim().length > 0 && ingredientsToSave.length > 0;
+
+  const appendUniqueIngredients = (current: string[], incoming: string[]) => {
+    const existing = new Set(current);
+    const uniqueIncoming = incoming.filter((item) => {
+      if (existing.has(item)) return false;
+      existing.add(item);
+      return true;
+    });
+
+    return uniqueIncoming.length > 0
+      ? [...current, ...uniqueIncoming]
+      : current;
+  };
 
   const addIngredient = () => {
-    if (ingredient.trim() === "") return;
-    setIngredientList((prev) => [...prev, ingredient.trim()]);
+    const nextIngredient = ingredient.trim();
+    if (nextIngredient === "") return;
+    setIngredientList((prev) =>
+      appendUniqueIngredients(prev, [nextIngredient]),
+    );
     setIngredient("");
+  };
+
+  const handleIngredientInputChange = (value: string) => {
+    const normalized = value.replace(/\r\n/g, "\n");
+    if (!/[,\n]/.test(normalized)) {
+      setIngredient(normalized);
+      return;
+    }
+
+    const parts = normalized.split(/[,\n]/);
+    const nextIngredient = parts.pop() ?? "";
+    const parsedIngredients = parts
+      .map((item) => item.trim())
+      .filter(Boolean);
+    if (parsedIngredients.length > 0) {
+      setIngredientList((prev) =>
+        appendUniqueIngredients(prev, parsedIngredients),
+      );
+    }
+    setIngredient(nextIngredient);
+  };
+
+  const onIngredientSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    addIngredient();
   };
 
   const deleteIngredient = (target: string) => {
@@ -72,25 +119,20 @@ export default function RecipeEditor({
         <Label htmlFor="ingredient" className="w-12 text-xs">
           재료
         </Label>
-        <div className="relative w-50">
+        <form className="relative w-50" onSubmit={onIngredientSubmit}>
           <Input
             id="ingredient"
             value={ingredient}
-            onChange={(e) => setIngredient(e.target.value)}
+            onChange={(e) => handleIngredientInputChange(e.target.value)}
+            enterKeyHint="done"
             className="h-7 text-xs"
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                addIngredient();
-              }
-            }}
           />
           <Check
             size={18}
             className="text-verde absolute top-1/2 right-2 -translate-y-1/2 cursor-pointer"
             onClick={addIngredient}
           />
-        </div>
+        </form>
       </div>
       <div className="ml-16">
         {ingredientList.length > 0 && (
@@ -138,9 +180,9 @@ export default function RecipeEditor({
           onClick={() =>
             void onSave({
               recipeName: name.trim(),
-              recipeMemo: memo.trim(),
+              recipeMemo: normalizedMemo,
               recipeUrl: url.trim(),
-              ingredients: ingredientList,
+              ingredients: ingredientsToSave,
             })
           }
           size="sm"
