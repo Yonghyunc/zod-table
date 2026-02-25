@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth, unauthorizedResponse } from "@/lib/auth";
 
+export const dynamic = "force-dynamic";
+
 function badRequest(message: string) {
   return NextResponse.json({ success: false, error: message }, { status: 400 });
 }

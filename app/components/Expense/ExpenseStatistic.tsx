@@ -20,9 +20,23 @@ interface TopExpenseItem {
 interface Props {
   weekDates: Date[];
   refreshKey: number;
+  expenses?: ExpenseStatsSourceItem[];
 }
 
-export default function ExpenseStatistic({ weekDates, refreshKey }: Props) {
+interface ExpenseStatsSourceItem {
+  expenseItem: string;
+  expenseAmount: number | null;
+  categoryId: string;
+  category: {
+    categoryName: string;
+  };
+}
+
+export default function ExpenseStatistic({
+  weekDates,
+  refreshKey,
+  expenses,
+}: Props) {
   const [categoryStats, setCategoryStats] = useState<CategoryRatioItem[]>([]);
   const [topExpenses, setTopExpenses] = useState<TopExpenseItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -42,6 +56,59 @@ export default function ExpenseStatistic({ weekDates, refreshKey }: Props) {
   }, [weekDates]);
 
   useEffect(() => {
+    if (expenses) {
+      const categoryAmountById = new Map<
+        string,
+        { categoryName: string; totalAmount: number }
+      >();
+      const itemAmountByName = new Map<string, number>();
+
+      expenses.forEach((expense) => {
+        const amount = expense.expenseAmount ?? 0;
+        const prevCategory = categoryAmountById.get(expense.categoryId);
+        categoryAmountById.set(expense.categoryId, {
+          categoryName: expense.category.categoryName,
+          totalAmount: (prevCategory?.totalAmount ?? 0) + amount,
+        });
+
+        itemAmountByName.set(
+          expense.expenseItem,
+          (itemAmountByName.get(expense.expenseItem) ?? 0) + amount,
+        );
+      });
+
+      const categoryTotal = Array.from(categoryAmountById.values()).reduce(
+        (sum, category) => sum + category.totalAmount,
+        0,
+      );
+
+      const nextCategoryStats = Array.from(categoryAmountById.entries())
+        .map(([categoryId, category]) => ({
+          categoryId,
+          categoryName: category.categoryName,
+          totalAmount: category.totalAmount,
+          ratio:
+            categoryTotal === 0
+              ? 0
+              : (category.totalAmount / categoryTotal) * 100,
+        }))
+        .sort((a, b) => b.totalAmount - a.totalAmount);
+
+      const nextTopExpenses = Array.from(itemAmountByName.entries())
+        .map(([expenseItem, totalAmount]) => ({ expenseItem, totalAmount }))
+        .sort((a, b) => b.totalAmount - a.totalAmount)
+        .slice(0, 5)
+        .map((item, index) => ({
+          rank: index + 1,
+          expenseItem: item.expenseItem,
+          totalAmount: item.totalAmount,
+        }));
+
+      setCategoryStats(nextCategoryStats);
+      setTopExpenses(nextTopExpenses);
+      return;
+    }
+
     if (!dateRange) {
       setCategoryStats([]);
       setTopExpenses([]);
@@ -56,6 +123,7 @@ export default function ExpenseStatistic({ weekDates, refreshKey }: Props) {
         const params = new URLSearchParams({
           startDate: dateRange.startDate,
           endDate: dateRange.endDate,
+          refreshKey: String(refreshKey),
         });
 
         const response = await fetch(
@@ -98,7 +166,7 @@ export default function ExpenseStatistic({ weekDates, refreshKey }: Props) {
     return () => {
       isMounted = false;
     };
-  }, [dateRange, refreshKey]);
+  }, [dateRange, expenses, refreshKey]);
 
   return (
     <div className="min-h-75 bg-white p-4">

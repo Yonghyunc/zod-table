@@ -11,6 +11,8 @@ interface Props {
   openEditor: () => void;
   weekDates: Date[];
   refreshKey: number;
+  onExpenseDeleted: () => void;
+  onExpensesChange?: (expenses: MealExpenseItem[]) => void;
 }
 
 interface MealExpenseItem {
@@ -28,6 +30,8 @@ export default function ExpenseDetail({
   openEditor,
   weekDates,
   refreshKey,
+  onExpenseDeleted,
+  onExpensesChange,
 }: Props) {
   const [expenses, setExpenses] = useState<MealExpenseItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -48,6 +52,7 @@ export default function ExpenseDetail({
   useEffect(() => {
     if (!dateRange) {
       setExpenses([]);
+      onExpensesChange?.([]);
       return;
     }
 
@@ -59,6 +64,7 @@ export default function ExpenseDetail({
         const params = new URLSearchParams({
           startDate: dateRange.startDate,
           endDate: dateRange.endDate,
+          refreshKey: String(refreshKey),
         });
 
         const response = await fetch(
@@ -82,9 +88,11 @@ export default function ExpenseDetail({
         }
 
         setExpenses(data.expenses);
+        onExpensesChange?.(data.expenses);
       } catch {
         if (!isMounted) return;
         setExpenses([]);
+        onExpensesChange?.([]);
       } finally {
         if (isMounted) {
           setIsLoading(false);
@@ -96,7 +104,7 @@ export default function ExpenseDetail({
     return () => {
       isMounted = false;
     };
-  }, [dateRange, refreshKey]);
+  }, [dateRange, onExpensesChange, refreshKey]);
 
   const handleDeleteExpense = async (expenseId: string) => {
     if (deletingExpenseIds.includes(expenseId)) {
@@ -122,9 +130,12 @@ export default function ExpenseDetail({
         throw new Error(message);
       }
 
-      setExpenses((prev) =>
-        prev.filter((expense) => expense.expenseId !== expenseId),
-      );
+      onExpenseDeleted();
+      setExpenses((prev) => {
+        const next = prev.filter((expense) => expense.expenseId !== expenseId);
+        onExpensesChange?.(next);
+        return next;
+      });
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "지출 삭제에 실패했습니다.";

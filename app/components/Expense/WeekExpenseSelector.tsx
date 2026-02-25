@@ -10,6 +10,7 @@ interface Props {
   weekDates: Date[];
   refreshKey: number;
   onDateChange: (date: Date) => void;
+  expenses?: MealExpenseAmountItem[];
 }
 
 interface MealExpenseAmountItem {
@@ -21,6 +22,7 @@ export default function WeekSelector({
   weekDates,
   refreshKey,
   onDateChange,
+  expenses,
 }: Props) {
   const [weeklyTotalExpense, setWeeklyTotalExpense] = useState(0);
 
@@ -38,6 +40,15 @@ export default function WeekSelector({
   }, [weekDates]);
 
   useEffect(() => {
+    if (expenses) {
+      const total = expenses.reduce(
+        (sum, expense) => sum + (expense.expenseAmount ?? 0),
+        0,
+      );
+      setWeeklyTotalExpense(total);
+      return;
+    }
+
     if (!dateRange) {
       setWeeklyTotalExpense(0);
       return;
@@ -50,6 +61,7 @@ export default function WeekSelector({
         const params = new URLSearchParams({
           startDate: dateRange.startDate,
           endDate: dateRange.endDate,
+          refreshKey: String(refreshKey),
         });
 
         const response = await fetch(
@@ -89,7 +101,7 @@ export default function WeekSelector({
     return () => {
       isMounted = false;
     };
-  }, [dateRange, refreshKey]);
+  }, [dateRange, expenses, refreshKey]);
 
   const moveWeek = (offset: number) => {
     const newDate = new Date(currentDate);

@@ -49,9 +49,9 @@ export default function MealPlanPage() {
   };
 
   return (
-    <div className="h-full">
+    <div className="flex h-full min-h-0 flex-col">
       <HeaderBar title="식단" />
-      <div className="scrollbar-hide w-full overflow-y-auto scroll-smooth bg-[#F8F9F9] p-4">
+      <div className="scrollbar-hide min-h-0 w-full flex-1 overflow-y-auto scroll-smooth bg-[#F8F9F9] p-4">
         <WeekSelector currentDate={currentDate} onDateChange={setCurrentDate} />
         <div className="mt-10 flex flex-col gap-4">
           {weekDays.map((dayDate, idx) => {
