@@ -131,7 +131,7 @@ export default function RecipesPage() {
         </div>
         <div className="flex h-[calc(100%-68px)] flex-col gap-2 py-4">
           {isLoadingRecipes ? (
-            <p className="text-center text-sm text-gray-500">로딩 중입니다</p>
+            <p className="text-center text-sm text-gray-500">Loading...</p>
           ) : recipes.length === 0 ? (
             <p className="text-center text-sm text-gray-500">
               {keyword.trim().length > 0

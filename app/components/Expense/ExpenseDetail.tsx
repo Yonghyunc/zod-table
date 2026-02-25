@@ -141,6 +141,10 @@ export default function ExpenseDetail({
         <Plus size={20} className="cursor-pointer" onClick={openEditor} />
       </div>
 
+      {isLoading && (
+        <p className="text-center text-sm text-gray-500">Loading...</p>
+      )}
+
       {weekDates.map((date) => {
         const dayKey = format(date, "yyyy-MM-dd");
         const dayExpenses = expenses.filter(

@@ -151,3 +151,9 @@
   --font-sans:
     var(--font-noto-sans), var(--font-noto-sans-kr), ui-sans-serif, system-ui;
 }
+
+@supports (padding: env(safe-area-inset-bottom)) {
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import BottomNavigation from "./components/BottomNavigation";
@@ -28,8 +28,20 @@ const notoSansKr = localFont({
 });
 
 export const metadata: Metadata = {
+  manifest: "/manifest.json", // manifest.ts가 자동으로 이 경로로 서빙됨
   title: "ZoD-Table",
-  description: "자취생 식단 기록 서비스",
+  description: "자취생을 위한 식단&식비 관리 서비스",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "zod-table",
+  },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover", // PWA 풀스크린 대응
 };
 
 export default function RootLayout({
@@ -38,13 +50,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko" className={`${notoSans.variable} ${notoSansKr.variable}`}>
+    <html
+      lang="ko"
+      className={`${notoSans.variable} ${notoSansKr.variable}`}
+      suppressHydrationWarning
+    >
       {/* body에서는 max-w-md와 mx-auto를 제거합니다 */}
       <body className="h-screen bg-gray-100 antialiased">
         <CategoryProvider>
           {/* 실제 콘텐츠 영역을 담당하는 Wrapper 생성 */}
           <div className="relative mx-auto flex h-full max-w-md flex-col bg-white shadow-lg">
-            <main className="scrollbar-hide h-[calc(100dvh-64px)] overflow-x-hidden overflow-y-auto">
+            <main className="scrollbar-hide h-[calc(100vh-64px)] overflow-x-hidden overflow-y-auto">
               {children}
             </main>
 
