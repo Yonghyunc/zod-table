@@ -116,9 +116,9 @@ export default function RecipesPage() {
   return (
     <div className="flex h-full min-h-0 flex-col">
       <HeaderBar title="레시피" />
-      <div className="scrollbar-hide min-h-0 flex-1 overflow-y-auto scroll-smooth bg-[#F8F9F9] p-4">
+      <div className="min-h-0 flex-1 bg-[#F8F9F9] p-4">
         <div className="shadow-box">
-          <InputGroup className="border-none bg-white">
+          <InputGroup className="bg-lime/10 border-none">
             <InputGroupInput
               placeholder="이름 또는 재료로 검색"
               value={keyword}
@@ -129,7 +129,7 @@ export default function RecipesPage() {
             </InputGroupAddon>
           </InputGroup>
         </div>
-        <div className="flex h-[calc(100%-68px)] flex-col gap-2 py-4">
+        <div className="scrollbar-hide flex h-[calc(100%-68px)] flex-col gap-2 overflow-y-auto scroll-smooth py-4">
           {isLoadingRecipes ? (
             <p className="text-center text-sm text-gray-500">Loading...</p>
           ) : recipes.length === 0 ? (
@@ -153,14 +153,15 @@ export default function RecipesPage() {
           )}
         </div>
         <div
-          className="shadow-box flex h-8 w-full cursor-pointer items-center justify-center bg-white"
+          className="shadow-box bg-lime z-20 flex h-10 w-full cursor-pointer items-center justify-center rounded"
           onClick={() => {
             setEditorMode("create");
             setEditingRecipe(null);
             setIsEditorOpen(true);
           }}
         >
-          <Plus size={18} />
+          {/* <Plus size={20} color={"white"} /> */}
+          <p className="font-bold text-white">추가하기</p>
         </div>
       </div>
       <Modal
