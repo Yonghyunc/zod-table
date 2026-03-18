@@ -153,7 +153,11 @@ export default function ExpenseDetail({
       </div>
 
       {isLoading ? (
-        <p className="text-center text-sm text-gray-500">Loading...</p>
+        <p className="mt-20 text-center text-sm text-gray-500">Loading...</p>
+      ) : expenses.length === 0 ? (
+        <div className="mt-20 text-center text-sm text-gray-500">
+          지출 내역이 없습니다.
+        </div>
       ) : (
         <>
           {weekDates.map((date) => {
@@ -177,7 +181,7 @@ export default function ExpenseDetail({
                   <h2 className="font-semibold">
                     {format(date, "d일(EEE)", { locale: ko })}
                   </h2>
-                  <span className="mr-[22px] font-semibold">
+                  <span className="mr-5.5 font-semibold">
                     {totalAmount.toLocaleString()}원
                   </span>
                 </div>

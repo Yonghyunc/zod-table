@@ -172,31 +172,39 @@ export default function ExpenseStatistic({
     <div className="min-h-75 bg-white p-4">
       <h1 className="mb-4 font-semibold">통계 </h1>
 
-      <div className="flex gap-6">
-        <div className="flex-1">
-          <h2 className="text-center font-semibold">카테고리별 지출 비율</h2>
-
-          <CustomPieChart data={categoryStats} />
+      {isLoading ? (
+        <p className="mt-20 text-center text-sm text-gray-500">Loading...</p>
+      ) : topExpenses.length === 0 ? (
+        <div className="mt-20 text-center text-sm text-gray-500">
+          지출 내역이 없습니다.
         </div>
-        <div className="flex-1">
-          <h2 className="mb-5 text-center font-semibold">지출 순위 TOP5</h2>
-          <div className="space-y-1">
-            {topExpenses.map((item) => (
-              <div
-                key={`${item.rank}-${item.expenseItem}`}
-                className="mx-2 flex items-center justify-between"
-              >
-                <span className="text-[13px] font-medium">
-                  {item.rank}. {item.expenseItem}
-                </span>
-                <span className="text-xs">
-                  {item.totalAmount.toLocaleString()}원
-                </span>
-              </div>
-            ))}
+      ) : (
+        <div className="flex gap-6">
+          <div className="flex-1">
+            <h2 className="text-center font-semibold">카테고리별 지출 비율</h2>
+
+            <CustomPieChart data={categoryStats} />
+          </div>
+          <div className="flex-1">
+            <h2 className="mb-5 text-center font-semibold">지출 순위 TOP5</h2>
+            <div className="space-y-1">
+              {topExpenses.map((item) => (
+                <div
+                  key={`${item.rank}-${item.expenseItem}`}
+                  className="mx-2 flex items-center justify-between"
+                >
+                  <span className="text-[13px] font-medium">
+                    {item.rank}. {item.expenseItem}
+                  </span>
+                  <span className="text-xs">
+                    {item.totalAmount.toLocaleString()}원
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
