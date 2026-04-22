@@ -64,10 +64,13 @@ export default function RecipesPage() {
       }
     };
 
-    void loadRecipes();
+    const timer = setTimeout(() => {
+      void loadRecipes();
+    }, 300);
 
     return () => {
       isMounted = false;
+      clearTimeout(timer);
     };
   }, [keyword, refreshKey]);
 

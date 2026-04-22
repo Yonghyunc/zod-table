@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAuth, unauthorizedResponse } from "@/lib/auth";
+import { getAuthContextFromHeaders, unauthorizedResponse } from "@/lib/auth";
+import { getCategoryNameMap } from "@/lib/categoryCache";
 
 export const dynamic = "force-dynamic";
 
@@ -29,9 +30,9 @@ function toUtcDate(value: string): Date {
 }
 
 export async function GET(request: NextRequest) {
-  const auth = await requireAuth(request);
-  if (!auth.payload?.userId) {
-    return unauthorizedResponse(auth.reason ?? undefined);
+  const auth = getAuthContextFromHeaders(request);
+  if (!auth) {
+    return unauthorizedResponse();
   }
 
   const startDate = request.nextUrl.searchParams.get("startDate");
@@ -51,7 +52,7 @@ export async function GET(request: NextRequest) {
 
   const expenses = await prisma.mealExpense.findMany({
     where: {
-      userId: auth.payload.userId,
+      userId: auth.userId,
       expenseDate: {
         gte: start,
         lt: end,
@@ -84,9 +85,9 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const auth = await requireAuth(request);
-  if (!auth.payload?.userId) {
-    return unauthorizedResponse(auth.reason ?? undefined);
+  const auth = getAuthContextFromHeaders(request);
+  if (!auth) {
+    return unauthorizedResponse();
   }
 
   let body: CreateMealExpenseBody;
@@ -130,12 +131,8 @@ export async function POST(request: NextRequest) {
     return badRequest("categoryId is required.");
   }
 
-  const category = await prisma.itemCategory.findUnique({
-    where: { categoryId },
-    select: { categoryId: true },
-  });
-
-  if (!category) {
+  const categoryMap = await getCategoryNameMap();
+  if (!categoryMap.has(categoryId)) {
     return badRequest("categoryId must exist in item_categories.");
   }
 
@@ -144,8 +141,8 @@ export async function POST(request: NextRequest) {
       expenseDate,
       expenseItem,
       expenseAmount,
-      categoryId: category.categoryId,
-      userId: auth.payload.userId,
+      categoryId,
+      userId: auth.userId,
     },
     select: {
       expenseId: true,
@@ -169,9 +166,9 @@ export async function POST(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-  const auth = await requireAuth(request);
-  if (!auth.payload?.userId) {
-    return unauthorizedResponse(auth.reason ?? undefined);
+  const auth = getAuthContextFromHeaders(request);
+  if (!auth) {
+    return unauthorizedResponse();
   }
 
   let body: DeleteMealExpenseBody;
@@ -186,26 +183,19 @@ export async function DELETE(request: NextRequest) {
     return badRequest("expenseId is required.");
   }
 
-  const existing = await prisma.mealExpense.findFirst({
+  const { count } = await prisma.mealExpense.deleteMany({
     where: {
       expenseId,
-      userId: auth.payload.userId,
+      userId: auth.userId,
     },
-    select: { expenseId: true },
   });
 
-  if (!existing) {
+  if (count === 0) {
     return NextResponse.json(
       { success: false, error: "Meal expense not found." },
       { status: 404 },
     );
   }
-
-  await prisma.mealExpense.delete({
-    where: {
-      expenseId,
-    },
-  });
 
   return NextResponse.json(
     { success: true, expenseId },

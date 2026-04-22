@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAuth, unauthorizedResponse } from "@/lib/auth";
+import { getAuthContextFromHeaders, unauthorizedResponse } from "@/lib/auth";
+import { getCategoryNameMap } from "@/lib/categoryCache";
 
 export const dynamic = "force-dynamic";
 
@@ -44,9 +45,9 @@ function toMonthRange(year: number, month: number): { start: Date; end: Date } {
 }
 
 export async function GET(request: NextRequest) {
-  const auth = await requireAuth(request);
-  if (!auth.payload?.userId) {
-    return unauthorizedResponse(auth.reason ?? undefined);
+  const auth = getAuthContextFromHeaders(request);
+  if (!auth) {
+    return unauthorizedResponse();
   }
 
   const startDateParam = request.nextUrl.searchParams.get("startDate");
@@ -84,11 +85,11 @@ export async function GET(request: NextRequest) {
     period = `${year}-${String(month).padStart(2, "0")}`;
   }
 
-  const [categoryGroups, itemGroups] = await Promise.all([
+  const [categoryGroups, itemGroups, categoryNameMap] = await Promise.all([
     prisma.mealExpense.groupBy({
       by: ["categoryId"],
       where: {
-        userId: auth.payload.userId,
+        userId: auth.userId,
         expenseDate: {
           gte: start,
           lt: end,
@@ -106,7 +107,7 @@ export async function GET(request: NextRequest) {
     prisma.mealExpense.groupBy({
       by: ["expenseItem"],
       where: {
-        userId: auth.payload.userId,
+        userId: auth.userId,
         expenseDate: {
           gte: start,
           lt: end,
@@ -122,24 +123,8 @@ export async function GET(request: NextRequest) {
       },
       take: 5,
     }),
+    getCategoryNameMap(),
   ]);
-
-  const categoryIds = categoryGroups.map((group) => group.categoryId);
-  const categories = await prisma.itemCategory.findMany({
-    where: {
-      categoryId: {
-        in: categoryIds,
-      },
-    },
-    select: {
-      categoryId: true,
-      categoryName: true,
-    },
-  });
-
-  const categoryNameMap = new Map(
-    categories.map((category) => [category.categoryId, category.categoryName]),
-  );
 
   const categoryTotal = categoryGroups.reduce(
     (sum, group) => sum + (group._sum.expenseAmount ?? 0),

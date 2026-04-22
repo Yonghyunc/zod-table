@@ -5,7 +5,7 @@ export async function getCategories() {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
   const res = await fetch(`${baseUrl}/api/item-categories`, {
-    cache: "no-store", // 실시간성을 위해 캐시 비활성화
+    next: { revalidate: 3600 },
   });
 
   if (!res.ok) {

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAuth, unauthorizedResponse } from "@/lib/auth";
+import { getAuthContextFromHeaders, unauthorizedResponse } from "@/lib/auth";
 
 interface CreateRecipeBody {
   recipeName: string;
@@ -57,16 +57,16 @@ function validateRecipeInput(params: {
 }
 
 export async function GET(request: NextRequest) {
-  const auth = await requireAuth(request);
-  if (!auth.payload?.userId) {
-    return unauthorizedResponse(auth.reason ?? undefined);
+  const auth = getAuthContextFromHeaders(request);
+  if (!auth) {
+    return unauthorizedResponse();
   }
 
   const keyword = request.nextUrl.searchParams.get("keyword")?.trim() ?? "";
 
   const recipes = await prisma.recipe.findMany({
     where: {
-      userId: auth.payload.userId,
+      userId: auth.userId,
       ...(keyword.length > 0
         ? {
             OR: [
@@ -136,11 +136,11 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const auth = await requireAuth(request);
-  if (!auth.payload?.userId) {
-    return unauthorizedResponse(auth.reason ?? undefined);
+  const auth = getAuthContextFromHeaders(request);
+  if (!auth) {
+    return unauthorizedResponse();
   }
-  const userId = auth.payload.userId;
+  const userId = auth.userId;
 
   let body: CreateRecipeBody;
   try {
@@ -214,9 +214,9 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
-  const auth = await requireAuth(request);
-  if (!auth.payload?.userId) {
-    return unauthorizedResponse(auth.reason ?? undefined);
+  const auth = getAuthContextFromHeaders(request);
+  if (!auth) {
+    return unauthorizedResponse();
   }
 
   let body: UpdateRecipeBody;
@@ -241,7 +241,7 @@ export async function PATCH(request: NextRequest) {
   const existing = await prisma.recipe.findFirst({
     where: {
       recipeId,
-      userId: auth.payload.userId,
+      userId: auth.userId,
     },
     select: {
       recipeId: true,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import WeekSelector from "./components/Meal/WeekSelector";
 import { getDaysInWeek } from "./_utils/getDaysInWeek";
 import DailyMealBox from "./components/Meal/DailyMealBox";
@@ -15,15 +15,72 @@ import { MealTime } from "@/constants/meal";
 export default function MealPlanPage() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [isEditorOpen, setIsEditorOpen] = useState(false);
-  const [refreshKeysByDate, setRefreshKeysByDate] = useState<
-    Record<string, number>
-  >({});
+  const [refreshKey, setRefreshKey] = useState(0);
   const [editingSchedule, setEditingSchedule] = useState<MealSchedule | null>(
     null,
   );
   const [editingMealTime, setEditingMealTime] = useState<MealTime>("breakfast");
   const [editingMealDate, setEditingMealDate] = useState<string>("");
-  const weekDays = getDaysInWeek(currentDate);
+  const [schedulesByDate, setSchedulesByDate] = useState<
+    Record<string, MealSchedule[]>
+  >({});
+
+  const weekDays = useMemo(() => getDaysInWeek(currentDate), [currentDate]);
+
+  const weekRange = useMemo(() => {
+    if (weekDays.length === 0) return null;
+    const sorted = [...weekDays].sort((a, b) => a.getTime() - b.getTime());
+    return {
+      startDate: dayjs(sorted[0]).format("YYYY-MM-DD"),
+      endDate: dayjs(sorted[sorted.length - 1]).format("YYYY-MM-DD"),
+    };
+  }, [weekDays]);
+
+  useEffect(() => {
+    if (!weekRange) {
+      setSchedulesByDate({});
+      return;
+    }
+
+    let isMounted = true;
+
+    const loadSchedules = async () => {
+      try {
+        const params = new URLSearchParams({
+          startDate: weekRange.startDate,
+          endDate: weekRange.endDate,
+        });
+        const response = await fetch(
+          `/api/meal-schedules?${params.toString()}`,
+          { cache: "no-store" },
+        );
+        if (!response.ok) {
+          throw new Error("Failed to load meal schedules.");
+        }
+        const data = (await response.json()) as {
+          success: boolean;
+          schedules?: MealSchedule[];
+        };
+        if (!isMounted || !data.success) return;
+
+        const grouped: Record<string, MealSchedule[]> = {};
+        for (const schedule of data.schedules ?? []) {
+          const key = dayjs(schedule.mealDate).format("YYYY-MM-DD");
+          if (!grouped[key]) grouped[key] = [];
+          grouped[key].push(schedule);
+        }
+        setSchedulesByDate(grouped);
+      } catch {
+        if (!isMounted) return;
+        setSchedulesByDate({});
+      }
+    };
+
+    void loadSchedules();
+    return () => {
+      isMounted = false;
+    };
+  }, [weekRange, refreshKey]);
 
   const openMealEditor = (
     schedule: MealSchedule | null,
@@ -41,11 +98,8 @@ export default function MealPlanPage() {
     setEditingSchedule(null);
   };
 
-  const handleSaveSuccess = (mealDate: string) => {
-    setRefreshKeysByDate((prev) => ({
-      ...prev,
-      [mealDate]: (prev[mealDate] ?? 0) + 1,
-    }));
+  const handleSaveSuccess = () => {
+    setRefreshKey((prev) => prev + 1);
   };
 
   return (
@@ -68,8 +122,8 @@ export default function MealPlanPage() {
                 </div>
                 <DailyMealBox
                   date={formattedDate}
+                  schedules={schedulesByDate[formattedDate] ?? []}
                   onEditRequest={openMealEditor}
-                  refreshKey={refreshKeysByDate[formattedDate] ?? 0}
                 />
               </div>
             );

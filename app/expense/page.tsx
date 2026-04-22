@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { format } from "date-fns";
 import HeaderBar from "../components/HeaderBar";
 import WeekExpenseSelector from "../components/Expense/WeekExpenseSelector";
@@ -50,67 +50,6 @@ export default function ExpensePage() {
       }),
     [monday],
   );
-
-  const weekDateRange = useMemo(() => {
-    if (weekDates.length === 0) return null;
-    const sortedDates = [...weekDates].sort(
-      (a, b) => a.getTime() - b.getTime(),
-    );
-    return {
-      startDate: format(sortedDates[0], "yyyy-MM-dd"),
-      endDate: format(sortedDates[sortedDates.length - 1], "yyyy-MM-dd"),
-    };
-  }, [weekDates]);
-
-  useEffect(() => {
-    if (!weekDateRange) {
-      setWeeklyExpenses([]);
-      return;
-    }
-
-    let isMounted = true;
-
-    const loadWeeklyExpenses = async () => {
-      try {
-        const params = new URLSearchParams({
-          startDate: weekDateRange.startDate,
-          endDate: weekDateRange.endDate,
-          refreshKey: String(refreshKey),
-        });
-
-        const response = await fetch(
-          `/api/meal-expenses?${params.toString()}`,
-          {
-            cache: "no-store",
-          },
-        );
-
-        if (!response.ok) {
-          throw new Error("Failed to load expenses.");
-        }
-
-        const data = (await response.json()) as {
-          success: boolean;
-          expenses?: WeeklyExpenseItem[];
-        };
-
-        if (!isMounted || !data.success) {
-          return;
-        }
-
-        setWeeklyExpenses(data.expenses ?? []);
-      } catch {
-        if (!isMounted) return;
-        setWeeklyExpenses([]);
-      }
-    };
-
-    void loadWeeklyExpenses();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [refreshKey, weekDateRange]);
 
   const handleSaveExpense = async (values: ExpenseEditorValues) => {
     try {

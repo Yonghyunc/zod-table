@@ -2,71 +2,23 @@
 
 import { MEAL_TIME, MealTime } from "@/constants/meal";
 import { MealSchedule } from "@/types/meal";
-import { useEffect, useState } from "react";
 import { MealTypeBadge } from "../common/MealTypeBadge";
 
 interface Props {
   date: string;
+  schedules: MealSchedule[];
   onEditRequest: (
     schedule: MealSchedule | null,
     mealTime: MealTime,
     mealDate: string,
   ) => void;
-  refreshKey?: number;
 }
 
 export default function DailyMealBox({
   date,
+  schedules,
   onEditRequest,
-  refreshKey = 0,
 }: Props) {
-  const [schedules, setSchedules] = useState<MealSchedule[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchSchedules = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-
-        const response = await fetch(`/api/meal-schedules?date=${date}`, {
-          method: "GET",
-          cache: "no-store",
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to load meal schedules");
-        }
-
-        const data = (await response.json()) as { schedules: MealSchedule[] };
-        setSchedules(data.schedules ?? []);
-      } catch {
-        setError("Failed to load meal schedules.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    void fetchSchedules();
-  }, [date, refreshKey]);
-
-  if (isLoading) {
-    return (
-      <div className="shadow-box rounded bg-white p-4 text-sm text-gray-500">
-        Loading...
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="shadow-box rounded bg-white p-4 text-sm text-red-500">
-        {error}
-      </div>
-    );
-  }
-
   const mealTimeOrder: MealTime[] = ["breakfast", "lunch", "dinner"];
   const scheduleByMealTime = new Map(
     schedules.map((schedule) => [schedule.mealTime, schedule]),

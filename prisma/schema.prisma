@@ -36,13 +36,14 @@ model ItemCategory {
 model MealSchedule {
   scheduleId String     @id @default(uuid()) @db.Uuid
   mealDate   DateTime   @db.Date
-  mealTime   MealTime 
+  mealTime   MealTime
   mealType   String?    @default("0") @db.VarChar(5)
   mealMemo   String?    @db.VarChar(255)
   userId     String     @db.VarChar(15)
   user       User       @relation(fields: [userId], references: [userId])
   logs       MealLog[]
 
+  @@index([userId, mealDate])
   @@map("meal_schedules")
 }
 
@@ -64,6 +65,7 @@ model MealExpense {
   userId        String       @db.VarChar(15)
   user          User         @relation(fields: [userId], references: [userId])
 
+  @@index([userId, expenseDate])
   @@map("meal_expenses")
 }
 
@@ -76,6 +78,7 @@ model Recipe {
   user         User               @relation(fields: [userId], references: [userId])
   ingredients  RecipeIngredient[]
 
+  @@index([userId])
   @@map("recipes")
 }
 

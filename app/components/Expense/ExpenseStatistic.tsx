@@ -123,7 +123,6 @@ export default function ExpenseStatistic({
         const params = new URLSearchParams({
           startDate: dateRange.startDate,
           endDate: dateRange.endDate,
-          refreshKey: String(refreshKey),
         });
 
         const response = await fetch(

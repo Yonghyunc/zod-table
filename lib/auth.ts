@@ -4,6 +4,9 @@ import { NextRequest, NextResponse } from 'next/server'
 export const AUTH_COOKIE_NAME = 'auth_token'
 export const AUTH_TOKEN_MAX_AGE_SECONDS = 60 * 60 * 24 * 7
 
+export const AUTH_USER_ID_HEADER = 'x-auth-user-id'
+export const AUTH_USER_NAME_HEADER = 'x-auth-user-name'
+
 const JWT_ALGORITHM = 'HS256'
 
 export interface AuthTokenPayload extends JWTPayload {
@@ -77,6 +80,22 @@ export async function requireAuth(request: NextRequest): Promise<AuthResult> {
   }
 
   return { payload, reason: null }
+}
+
+export interface AuthContext {
+  userId: string
+  name: string
+}
+
+export function getAuthContextFromHeaders(
+  request: NextRequest,
+): AuthContext | null {
+  const userId = request.headers.get(AUTH_USER_ID_HEADER)
+  const name = request.headers.get(AUTH_USER_NAME_HEADER)
+  if (!userId || !name) {
+    return null
+  }
+  return { userId, name }
 }
 
 export function unauthorizedResponse(reason?: AuthFailureReason) {
