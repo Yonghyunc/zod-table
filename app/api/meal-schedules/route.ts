@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getAuthContextFromHeaders, unauthorizedResponse } from "@/lib/auth";
-
-const VALID_MEAL_TIMES = ["breakfast", "lunch", "dinner"] as const;
-type ApiMealTime = (typeof VALID_MEAL_TIMES)[number];
+import { MEAL_TIMES, MealTime } from "@/constants/meal";
 
 function isValidDateParam(value: string): boolean {
   return /^\d{4}-\d{2}-\d{2}$/.test(value);
@@ -16,7 +14,7 @@ function toUtcDate(dateParam: string): Date {
 
 interface CreateMealScheduleBody {
   mealDate?: string;
-  mealTime?: ApiMealTime | string;
+  mealTime?: MealTime | string;
   mealType?: string | null;
   mealMemo?: string | null;
   menuNames?: string[];
@@ -33,8 +31,8 @@ function badRequest(message: string) {
   return NextResponse.json({ success: false, error: message }, { status: 400 });
 }
 
-function isApiMealTime(value: string): value is ApiMealTime {
-  return VALID_MEAL_TIMES.includes(value as ApiMealTime);
+function isApiMealTime(value: string): value is MealTime {
+  return MEAL_TIMES.includes(value as MealTime);
 }
 
 export async function GET(request: NextRequest) {
@@ -121,7 +119,7 @@ export async function POST(request: NextRequest) {
   }
 
   if (!mealTime || !isApiMealTime(mealTime)) {
-    return badRequest("mealTime must be one of breakfast, lunch, dinner.");
+    return badRequest(`mealTime must be one of ${MEAL_TIMES.join(", ")}.`);
   }
 
   const [year, month, day] = mealDate.split("-").map(Number);

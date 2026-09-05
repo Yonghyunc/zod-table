@@ -1,6 +1,6 @@
 "use client";
 
-import { MEAL_TIME, MealTime } from "@/constants/meal";
+import { MEAL_TIME, MEAL_TIMES, MealTime } from "@/constants/meal";
 import { MealSchedule } from "@/types/meal";
 import { MealTypeBadge } from "../common/MealTypeBadge";
 
@@ -19,7 +19,6 @@ export default function DailyMealBox({
   schedules,
   onEditRequest,
 }: Props) {
-  const mealTimeOrder: MealTime[] = ["breakfast", "lunch", "dinner"];
   const scheduleByMealTime = new Map(
     schedules.map((schedule) => [schedule.mealTime, schedule]),
   );
@@ -28,9 +27,9 @@ export default function DailyMealBox({
     <>
       <div className="shadow-box rounded bg-white p-4">
         <ul className="flex flex-col gap-3">
-          {mealTimeOrder.map((mealTime, index) => {
+          {MEAL_TIMES.map((mealTime, index) => {
             const schedule = scheduleByMealTime.get(mealTime);
-            const isLast = index === mealTimeOrder.length - 1;
+            const isLast = index === MEAL_TIMES.length - 1;
 
             return (
               <div

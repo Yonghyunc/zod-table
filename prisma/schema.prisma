@@ -12,6 +12,7 @@ enum MealTime {
   breakfast
   lunch
   dinner
+  snack
 }
 
 model User {

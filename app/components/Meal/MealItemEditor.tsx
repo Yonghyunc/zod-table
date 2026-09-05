@@ -39,8 +39,9 @@ export default function MealItemEditor({
   onSaved,
   onClose,
 }: Props) {
+  const isSnack = mealTime === "snack";
   const [selected, setSelected] = useState<string | null>(
-    schedule?.mealType ?? "0",
+    isSnack ? null : (schedule?.mealType ?? "0"),
   );
   const [menuList, setMenuList] = useState<string[]>(
     schedule?.logs.map((log) => log.menuName) ?? [],
@@ -113,6 +114,7 @@ export default function MealItemEditor({
         pendingMenu !== "" && !menuList.includes(pendingMenu)
           ? [...menuList, pendingMenu]
           : menuList;
+      const mealType = isSnack ? null : selected;
 
       const response = schedule?.scheduleId
         ? await fetch("/api/meal-schedules", {
@@ -120,7 +122,7 @@ export default function MealItemEditor({
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               scheduleId: schedule.scheduleId,
-              mealType: selected ?? null,
+              mealType,
               mealMemo: normalizedMemo,
               menuNames,
             }),
@@ -131,7 +133,7 @@ export default function MealItemEditor({
             body: JSON.stringify({
               mealDate,
               mealTime,
-              mealType: selected ?? null,
+              mealType,
               mealMemo: normalizedMemo,
               menuNames,
             }),
@@ -162,23 +164,27 @@ export default function MealItemEditor({
       <p className="border-border-gray border-b pb-2 text-sm font-medium text-gray-800">
         {MEAL_TIME[mealTime]}
       </p>
-      <div className="flex gap-4">
-        {OPTIONS.map((opt) => {
-          const isChecked = selected === opt.value;
-          return (
-            <div key={opt.value} className="flex items-center gap-1">
-              <Checkbox
-                id={opt.value}
-                checked={isChecked}
-                onCheckedChange={(checked) => handleChange(opt.value, checked)}
-              />
-              <Label htmlFor={opt.value} className="cursor-pointer text-xs">
-                {opt.label}
-              </Label>
-            </div>
-          );
-        })}
-      </div>
+      {!isSnack && (
+        <div className="flex gap-4">
+          {OPTIONS.map((opt) => {
+            const isChecked = selected === opt.value;
+            return (
+              <div key={opt.value} className="flex items-center gap-1">
+                <Checkbox
+                  id={opt.value}
+                  checked={isChecked}
+                  onCheckedChange={(checked) =>
+                    handleChange(opt.value, checked)
+                  }
+                />
+                <Label htmlFor={opt.value} className="cursor-pointer text-xs">
+                  {opt.label}
+                </Label>
+              </div>
+            );
+          })}
+        </div>
+      )}
       <form className="relative w-60" onSubmit={onMenuSubmit}>
         <Input
           value={menu}
