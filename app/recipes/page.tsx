@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { Plus, SearchIcon } from "lucide-react";
+import { SearchIcon } from "lucide-react";
 import HeaderBar from "../components/HeaderBar";
 import {
   InputGroup,
@@ -14,9 +14,11 @@ import RecipeEditor, {
   type RecipeEditorValues,
 } from "../components/Recipe/RecipeEditor";
 import { RecipeItem } from "@/types/recipe";
+import { Button } from "@/components/ui/button";
 
 export default function RecipesPage() {
   const [keyword, setKeyword] = useState("");
+  const [showMine, setShowMine] = useState(false);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [editorMode, setEditorMode] = useState<"create" | "edit">("create");
   const [editingRecipe, setEditingRecipe] = useState<RecipeItem | null>(null);
@@ -34,6 +36,9 @@ export default function RecipesPage() {
         const params = new URLSearchParams();
         if (keyword.trim().length > 0) {
           params.set("keyword", keyword.trim());
+        }
+        if (showMine) {
+          params.set("mine", "true");
         }
 
         const response = await fetch(`/api/recipes?${params.toString()}`, {
@@ -72,7 +77,7 @@ export default function RecipesPage() {
       isMounted = false;
       clearTimeout(timer);
     };
-  }, [keyword, refreshKey]);
+  }, [keyword, showMine, refreshKey]);
 
   const handleSaveRecipe = async (values: RecipeEditorValues) => {
     try {
@@ -120,17 +125,29 @@ export default function RecipesPage() {
     <div className="flex h-full min-h-0 flex-col">
       <HeaderBar title="레시피" />
       <div className="min-h-0 flex-1 bg-[#F8F9F9] p-4">
-        <div className="shadow-box">
-          <InputGroup className="bg-lime/10 border-none">
-            <InputGroupInput
-              placeholder="이름 또는 재료로 검색"
-              value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
-            />
-            <InputGroupAddon align="inline-end">
-              <SearchIcon />
-            </InputGroupAddon>
-          </InputGroup>
+        <div className="flex gap-2">
+          <div className="shadow-box min-w-0 flex-1">
+            <InputGroup className="bg-lime/10 border-none">
+              <InputGroupInput
+                placeholder="이름 또는 재료로 검색"
+                value={keyword}
+                onChange={(e) => setKeyword(e.target.value)}
+              />
+              <InputGroupAddon align="inline-end">
+                <SearchIcon />
+              </InputGroupAddon>
+            </InputGroup>
+          </div>
+          <Button
+            type="button"
+            size="sm"
+            variant={showMine ? "default" : "outline"}
+            aria-pressed={showMine}
+            className={showMine ? "h-auto" : "border-lime text-lime h-auto"}
+            onClick={() => setShowMine((prev) => !prev)}
+          >
+            내 레시피
+          </Button>
         </div>
         <div className="scrollbar-hide flex h-[calc(100%-68px)] flex-col gap-2 overflow-y-auto scroll-smooth py-4">
           {isLoadingRecipes ? (
@@ -139,7 +156,9 @@ export default function RecipesPage() {
             <p className="text-center text-sm text-gray-500">
               {keyword.trim().length > 0
                 ? "검색 결과가 없습니다."
-                : "등록된 레시피가 없습니다."}
+                : showMine
+                  ? "내 레시피가 없습니다."
+                  : "등록된 레시피가 없습니다."}
             </p>
           ) : (
             recipes.map((recipe) => (
@@ -163,7 +182,6 @@ export default function RecipesPage() {
             setIsEditorOpen(true);
           }}
         >
-          {/* <Plus size={20} color={"white"} /> */}
           <p className="font-bold text-white">추가하기</p>
         </div>
       </div>

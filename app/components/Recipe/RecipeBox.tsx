@@ -25,12 +25,16 @@ export default function RecipeBox({ recipe, onEdit }: Props) {
             </a>
           )}
         </div>
-        <Settings
-          size={16}
-          color="#808080"
-          className="cursor-pointer"
-          onClick={() => onEdit(recipe)}
-        />
+        {recipe.isOwner && (
+          <button
+            type="button"
+            aria-label={`${recipe.recipeName} 수정`}
+            className="cursor-pointer"
+            onClick={() => onEdit(recipe)}
+          >
+            <Settings size={16} color="#808080" />
+          </button>
+        )}
       </div>
       <div className="mx-1 flex justify-start">
         <p className="w-10 text-xs font-medium">재료</p>

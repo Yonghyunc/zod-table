@@ -8,5 +8,6 @@ export interface RecipeItem {
   recipeName: string;
   recipeMemo: string | null;
   recipeUrl: string | null;
+  isOwner: boolean;
   ingredients: RecipeIngredient[];
 }

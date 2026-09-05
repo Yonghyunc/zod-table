@@ -63,10 +63,11 @@ export async function GET(request: NextRequest) {
   }
 
   const keyword = request.nextUrl.searchParams.get("keyword")?.trim() ?? "";
+  const onlyMine = request.nextUrl.searchParams.get("mine") === "true";
 
   const recipes = await prisma.recipe.findMany({
     where: {
-      userId: auth.userId,
+      ...(onlyMine ? { userId: auth.userId } : {}),
       ...(keyword.length > 0
         ? {
             OR: [
@@ -97,6 +98,7 @@ export async function GET(request: NextRequest) {
       recipeName: true,
       recipeMemo: true,
       recipeUrl: true,
+      userId: true,
       ingredients: {
         select: {
           ingredient: {
@@ -118,6 +120,7 @@ export async function GET(request: NextRequest) {
     recipeName: recipe.recipeName,
     recipeMemo: recipe.recipeMemo,
     recipeUrl: recipe.recipeUrl,
+    isOwner: recipe.userId === auth.userId,
     ingredients: recipe.ingredients.map((row) => row.ingredient),
   }));
 
