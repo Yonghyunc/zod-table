@@ -1,0 +1,1 @@
+ALTER TYPE "MealTime" ADD VALUE IF NOT EXISTS 'snack';
